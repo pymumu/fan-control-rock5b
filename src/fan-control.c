@@ -175,7 +175,7 @@ int init_GPIO()
     }
 
     ret = write_value("/sys/devices/platform/fd8b0010.pwm/pwm/pwmchip1/pwm0/duty_cycle", "0");
-    if (ret < 0)
+    if (ret < 0 && errno != EINVAL)
     {
         printf("Failed to export GPIO, %s\n", strerror(errno));
         return -1;
