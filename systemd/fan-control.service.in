@@ -1,0 +1,17 @@
+[Unit]
+Description=fan control for rock5b
+After=network.target 
+StartLimitBurst=0
+StartLimitIntervalSec=60
+
+[Service]
+Type=forking
+PIDFile=@RUNSTATEDIR@/fan-control.pid
+ExecStart=@SBINDIR@/fan-control -d -p @RUNSTATEDIR@/fan-control.pid
+Restart=always
+RestartSec=2
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target
+Alias=fan-control.service

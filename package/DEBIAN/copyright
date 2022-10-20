@@ -1,0 +1,7 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: fan-control-rock5b
+Source: http://github.com/pymumu/fan-control-rock5b
+
+Files: *
+Copyright: 2022 Nick peng
+License: MIT

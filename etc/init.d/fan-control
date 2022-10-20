@@ -1,0 +1,111 @@
+#!/bin/sh
+#
+# MIT License
+
+# Copyright (c) 2022 Nick Peng
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+### BEGIN INIT INFO
+# Provides:        fan-control
+# Required-Start:  $network 
+# Required-Stop:   $network 
+# Default-Start:   2 3 4 5
+# Default-Stop:
+# Short-Description: Start fan-control service
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+FAN_CONTROL=/usr/sbin/fan-control
+PIDFILE=/run/fan-control.pid
+
+test -x $FAN_CONTROL || exit 5
+
+case $1 in
+	start)
+		$FAN_CONTROL -d -p $PIDFILE
+		while true; do
+			if [ -e "$PIDFILE" ]; then
+				break;
+			fi
+			sleep .5
+		done
+		PID="$(cat $PIDFILE 2>/dev/null)"
+		if [ -z "$PID" ]; then
+			echo "start fan-control service failed."
+			exit 1
+		fi
+		if [ ! -e "/proc/$PID" ]; then
+			echo "start fan-control service failed."
+			exit 1
+		fi
+		echo "start fan-control service success."
+		;;
+	stop)
+		if [ ! -f "$PIDFILE" ]; then
+			echo "fan-control service is stopped."
+			exit 0
+		fi
+		PID="$(cat $PIDFILE 2>/dev/null)"
+		if [ ! -e "/proc/$PID" ] || [ -z "$PID" ]; then
+			echo "fan-control service is stopped"
+			exit 0
+		fi
+
+		kill -TERM "$PID"
+		if [ $? -ne 0 ]; then
+			echo "Stop fan-control service failed."
+			exit 1;
+		fi
+		LOOP=1
+		while true; do
+			if [ ! -d "/proc/$PID" ]; then
+				break;
+			fi
+
+			if [ $LOOP -gt 12 ]; then
+				kill -9 "$PID"
+				break;
+			fi
+			LOOP=$((LOOP+1))
+			sleep .5
+		done
+		echo "Stop fan-control service success."
+		;;
+	restart)
+		"$0" stop && "$0" start
+		;;
+	status)
+		PID="$(cat "$PIDFILE" 2>/dev/null)"
+		if [ ! -e "/proc/$PID" ] || [ -z "$PID" ]; then
+			echo "fan-control service is not running."
+			exit 1
+		fi
+		echo "fan-control service is running."
+		status=$?
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|status}"
+		exit 2
+		;;
+esac
+
+exit $status
+
