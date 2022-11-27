@@ -28,6 +28,7 @@ SYSCONFDIR := /etc
 RUNSTATEDIR := /var/run
 SYSTEMDSYSTEMUNITDIR := $(shell ${PKG_CONFIG} --variable=systemdsystemunitdir systemd)
 FAN_CONTROL_SYSTEMD = systemd/fan-control.service
+VER := "1.0.0"
 
 .PHONY: all clean install FAN_CONTROL_BIN package
 all: package 
@@ -42,7 +43,7 @@ $(FAN_CONTROL_SYSTEMD): systemd/fan-control.service.in
 	sed -i 's|@RUNSTATEDIR@|$(RUNSTATEDIR)|' $@
 
 package: FAN_CONTROL_BIN
-	cd package && ./make.sh	-o $(shell pwd) 
+	cd package && ./make.sh	-o $(shell pwd) --ver ${VER}
 
 clean:
 	$(MAKE) $(MFLAGS) -C src clean  

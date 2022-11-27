@@ -185,7 +185,7 @@ void show_help(void)
                 "Usage: fan-control [option]\n"
                 "Options:\n"
                 "  -d       start as a daemon service.\n"
-                "    -p       specify a pid file path (default: /run/fan-control.pid)\n"
+                "  -p       specify a pid file path (default: /run/fan-control.pid)\n"
                 "  -s [0-6] set fan speed.\n"
                 "  -h       show help message.\n"
                 "\n";
