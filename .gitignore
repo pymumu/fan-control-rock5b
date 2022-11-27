@@ -3,3 +3,4 @@
 systemd/fan-control.service
 src/fan-control
 src/*.o
+src/lib/*.o

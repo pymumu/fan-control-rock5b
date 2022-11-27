@@ -22,6 +22,22 @@ systemctl enable fan-control
 systemctl start fan-control
 ```
   
+Configuration
+==============
+
+configuration file locations is `/etc/fan-control.json`, Configuration parameter description:
+
+|Configuration|Description|
+|--|--|
+|pwmchip|pwmchip id, 1 for auto scan|
+|gpio|gpio id, 0 is default gpio |
+|pwm-period|PWM period|
+|temp-map|temperature configuration table|
+|temp|temperature, in degrees Celsius|
+|duty|duty ratio|
+|duration|duration, in second|
+
+
 License
 ===============
 MIT License

@@ -49,6 +49,7 @@ build()
 
 	cp $FAN_CONTROL_DIR/systemd/fan-control.service $ROOT/lib/systemd/system/
 	cp $FAN_CONTROL_DIR/etc/init.d/fan-control $ROOT/etc/init.d/
+	cp $FAN_CONTROL_DIR/etc/fan-control.json $ROOT/etc/
 	cp $FAN_CONTROL_DIR/src/fan-control $ROOT/usr/sbin
 	if [ $? -ne 0 ]; then
 		echo "copy fan-control file failed."
