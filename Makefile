@@ -51,9 +51,8 @@ clean:
 	$(RM) fan-control*.deb
 
 install: FAN_CONTROL_BIN 
-	install -v -m 0640 -D -t $(DESTDIR)$(SYSCONFDIR)/default etc/default/fan-control
 	install -v -m 0755 -D -t $(DESTDIR)$(SYSCONFDIR)/init.d etc/init.d/fan-control
-	install -v -m 0640 -D -t $(DESTDIR)$(SYSCONFDIR)/fan-control etc/fan-control/fan-control.conf
+	install -v -m 0640 -D -t $(DESTDIR)$(SYSCONFDIR) etc/fan-control.json
 	install -v -m 0755 -D -t $(DESTDIR)$(SBINDIR) src/fan-control
 	install -v -m 0644 -D -t $(DESTDIR)$(SYSTEMDSYSTEMUNITDIR) systemd/fan-control.service
 
