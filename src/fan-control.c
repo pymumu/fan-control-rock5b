@@ -40,6 +40,7 @@ int pidfile_fd = 0;
 int pwmchip_id = -1;
 int pwmchip_gpio_id = 0;
 int pwm_period = 10000;
+int fan_mode = 0;
 
 #define DEFAULT_PID_PATH "/run/fan-control.pid"
 #define DEFAULT_CONF_PATH "/etc/fan-control.json"
@@ -111,7 +112,16 @@ int write_speed(int speed)
 
     char buffer[16];
     snprintf(buffer, 15, "%d", temp_map[speed].duty);
-    return write_pwmchip_pwm_value(pwmchip_id, pwmchip_gpio_id, "duty_cycle", buffer);
+    if (fan_mode == 0)
+    {
+        return write_pwmchip_pwm_value(pwmchip_id, pwmchip_gpio_id, "duty_cycle", buffer);
+    }
+    else if (fan_mode == 1)
+    {
+        return write_value("/sys/devices/platform/pwm-fan/hwmon/hwmon8/pwm1", buffer);
+    }
+
+    return -1;
 }
 
 int set_speed(int speed)
@@ -257,12 +267,35 @@ int init_pwm_GPIO()
         {
             pwmchip_id = i;
             printf("Found pwmchip%d\n", pwmchip_id);
+            fan_mode = 0;
             return 0;
         }
     }
 
     printf("Failed to init GPIO\n");
     return -1;
+}
+
+int init_thermal()
+{
+    int ret = write_value("/sys/class/thermal/thermal_zone0/policy", "user_space");
+    if (ret < 0)
+    {
+        printf("Failed to set thermal policy, %s\n", strerror(errno));
+        return -1;
+    }
+
+    fan_mode = 1;
+
+    return 0;
+}
+
+void update_temp_map()
+{
+    for (int i = 0; i < temp_map_size; i++)
+    {
+        temp_map[i].duty = temp_map[i].duty * 100 / pwm_period * 255 / 100;
+    }
 }
 
 int create_pid_file(const char *pid_file)
@@ -499,9 +532,12 @@ errout:
 
 void display_config()
 {
-    printf("pwmchip: %d\n", pwmchip_id);
-    printf("gpio: %d\n", pwmchip_gpio_id);
-    printf("pwm-period: %d\n", pwm_period);
+    if (fan_mode == 0)
+    {
+        printf("pwmchip: %d\n", pwmchip_id);
+        printf("gpio: %d\n", pwmchip_gpio_id);
+        printf("pwm-period: %d\n", pwm_period);
+    }
     printf("temp-map:\n");
 
     for (int i = 0; i < temp_map_size; i++)
@@ -578,12 +614,18 @@ int main(int argc, char *argv[])
         }
     }
 
-    display_config();
-
     if (init_pwm_GPIO())
     {
-        return 0;
+        if (init_thermal())
+        {
+            printf("Failed to init thermal.\n");
+            return 1;
+        }
+
+        update_temp_map();
     }
+
+    display_config();
 
     if (speed_set != -1)
     {
