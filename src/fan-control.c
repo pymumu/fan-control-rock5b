@@ -285,6 +285,13 @@ int init_thermal()
         return -1;
     }
 
+    ret = write_value("/sys/class/thermal/thermal_zone0/mode", "disabled");
+    if (ret < 0)
+    {
+        printf("Failed to set thermal mode, %s\n", strerror(errno));
+        return -1;
+    }
+
     fan_mode = 1;
 
     return 0;
